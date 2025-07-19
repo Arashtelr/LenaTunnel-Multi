@@ -21,6 +21,15 @@ Lena is a fast, lightweight, and intelligent tunnel that provides a stable and s
 ```
 bash <(curl -Ls https://raw.githubusercontent.com/Arashtelr/LenaTunnel-Multi/main/install.sh)
 ```
+# How to Use (Short and Simple):
+
+Run the script and select option 1 (Install new tunnel).<br>
+Enter a unique VNI (1-255).<br>
+Specify the server role: Iran (1) or Foreign (2).<br>
+Enter the IP address of the remote server and a valid port (1-64435).<br>
+Use the same VNI and port for each Iran-Foreign server pair.<br>
+Repeat the steps with a new VNI to create additional tunnels.<br>
+To remove all tunnels, select option 2.<br>
 
 ## Support the project with cryptocurrency
 - TRX : `TLfVhyK6ihTuPNtFpuhULNuJaiKFLHxMFL`
