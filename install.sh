@@ -10,11 +10,8 @@ sudo apt-get install -y jq
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 MAGENTA='\033[0;35m'
-<<<<<<< HEAD
-=======
 CYAN='\033[0;36m'
 RED='\033[0;31m'
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
 NC='\033[0m'
 
 # ---------------- FUNCTIONS ----------------
@@ -30,16 +27,6 @@ Lena_menu() {
     SERVER_ISP=$(curl -sS "http://ip-api.com/json/$SERVER_IP" | jq -r '.isp')
 
     echo "+-----------------------------------------------------------------------------+"
-<<<<<<< HEAD
-    echo "| _                      										|"
-    echo "|| |                     										|"
-    echo "|| |     ___ _ __   __ _ 										|"
-    echo "|| |    / _ \ '_ \ / _  |										|"
-    echo "|| |___|  __/ | | | (_| |										|"
-    echo "|\_____/\___|_| |_|\__,_|	V1.0.2 Beta				            |" 
-    echo "+-----------------------------------------------------------------------------+"    
-    echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 1.0.2 Beta ${NC} "
-=======
     echo "|    _                                                                       |"
     echo "|   | |                                                                      |"
     echo "|   | |     ___ _ __   __ _                                                  |"
@@ -48,7 +35,6 @@ Lena_menu() {
     echo "|   |_____/\___|_| |_|\__,_|       V1.0.2 Beta                               |"
     echo "+-----------------------------------------------------------------------------+"
     echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 1.0.2 Beta ${NC} |"
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
     echo "+-----------------------------------------------------------------------------+"      
     echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
     echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
@@ -59,11 +45,8 @@ Lena_menu() {
     echo -e "1- Install new tunnel"
     echo -e "2- Uninstall tunnel(s)"
     echo -e "3- Install BBR"
-<<<<<<< HEAD
-=======
     echo -e "4- List tunnels"
     echo -e "0- Exit"
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
     echo "+-----------------------------------------------------------------------------+"
     echo -e "\033[0m"
 }
@@ -75,10 +58,6 @@ uninstall_all_vxlan() {
     done
     rm -f /usr/local/bin/vxlan_bridge_*.sh
     find /etc/systemd/system/ -name 'vxlan-tunnel-*.service' -exec rm -f {} \;
-<<<<<<< HEAD
-    systemctl daemon-reload
-    echo "[+] All VXLAN tunnels deleted."
-=======
     rm -f /etc/vxlan-tunnel-*.conf
     systemctl daemon-reload
     echo -e "${GREEN}[+] All VXLAN tunnels deleted.${NC}"
@@ -123,7 +102,6 @@ uninstall_single_vxlan() {
     ip link del $VXLAN_IF 2>/dev/null
     systemctl daemon-reload
     echo -e "${GREEN}[✓] Tunnel vxlan${VNI} uninstalled.${NC}"
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
 }
 
 install_bbr() {
@@ -133,12 +111,6 @@ install_bbr() {
     rm /tmp/bbr.sh
 }
 
-<<<<<<< HEAD
-# ---------------- MAIN ----------------
-while true; do
-    Lena_menu
-    read -p "Enter your choice [1-3]: " main_action
-=======
 list_tunnels() {
     active_tunnels=0
     echo -e "\n${YELLOW}Active VXLAN Tunnels:${NC}"
@@ -203,23 +175,11 @@ while true; do
         exit 0
     fi
     
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
     case $main_action in
         1)
             break
             ;;
         2)
-<<<<<<< HEAD
-            uninstall_all_vxlan
-            read -p "Press Enter to return to menu..."
-            ;;
-        3)
-            install_bbr
-            read -p "Press Enter to return to menu..."
-            ;;
-        *)
-            echo "[x] Invalid option. Try again."
-=======
             while true; do
                 echo -e "\n${YELLOW}Uninstall Options:${NC}"
                 echo "1) Uninstall all tunnels"
@@ -261,7 +221,6 @@ while true; do
             ;;
         *)
             echo -e "${RED}[x] Invalid option. Try again.${NC}"
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
             sleep 1
             ;;
     esac
@@ -269,21 +228,11 @@ done
 
 # Check if ip command is available
 if ! command -v ip >/dev/null 2>&1; then
-<<<<<<< HEAD
-    echo "[x] iproute2 is not installed. Aborting."
-=======
     echo -e "${RED}[x] iproute2 is not installed. Aborting.${NC}"
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
     exit 1
 fi
 
 # ------------- VARIABLES --------------
-<<<<<<< HEAD
-read -p "Enter unique VNI number (1-255): " VNI
-while [[ ! $VNI =~ ^[0-9]+$ ]] || (( VNI < 1 || VNI > 255 )); do
-    echo "Invalid VNI. Must be between 1-255."
-    read -p "Enter unique VNI number (1-255): " VNI
-=======
 read -p "Enter unique VNI number (1-255, 0 to cancel): " VNI
 if [[ "$VNI" == "0" ]]; then
     exit 0
@@ -294,7 +243,6 @@ while [[ ! $VNI =~ ^[0-9]+$ ]] || (( VNI < 1 || VNI > 255 )); do
     if [[ "$VNI" == "0" ]]; then
         exit 0
     fi
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
 done
 
 VXLAN_IF="vxlan${VNI}"
@@ -303,31 +251,21 @@ VXLAN_IF="vxlan${VNI}"
 echo "Choose server role:"
 echo "1- Iran"
 echo "2- Kharej"
-<<<<<<< HEAD
-read -p "Enter choice (1/2): " role_choice
-
-if [[ "$role_choice" == "1" ]]; then
-=======
 echo "0- Cancel"
 read -p "Enter choice (0-2): " role_choice
 
 if [[ "$role_choice" == "0" ]]; then
     exit 0
 elif [[ "$role_choice" == "1" ]]; then
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
     read -p "Enter IRAN IP: " IRAN_IP
     read -p "Enter Kharej IP: " KHAREJ_IP
 
     # Port validation loop
     while true; do
-<<<<<<< HEAD
-        read -p "Tunnel port (1 ~ 64435): " DSTPORT
-=======
         read -p "Tunnel port (1 ~ 64435, 0 to cancel): " DSTPORT
         if [[ "$DSTPORT" == "0" ]]; then
             exit 0
         fi
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
         if [[ $DSTPORT =~ ^[0-9]+$ ]] && (( DSTPORT >= 1 && DSTPORT <= 64435 )); then
             break
         else
@@ -349,14 +287,10 @@ elif [[ "$role_choice" == "2" ]]; then
 
     # Port validation loop
     while true; do
-<<<<<<< HEAD
-        read -p "Tunnel port (1 ~ 64435): " DSTPORT
-=======
         read -p "Tunnel port (1 ~ 64435, 0 to cancel): " DSTPORT
         if [[ "$DSTPORT" == "0" ]]; then
             exit 0
         fi
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
         if [[ $DSTPORT =~ ^[0-9]+$ ]] && (( DSTPORT >= 1 && DSTPORT <= 64435 )); then
             break
         else
@@ -373,11 +307,7 @@ elif [[ "$role_choice" == "2" ]]; then
     echo -e "####################################"
 
 else
-<<<<<<< HEAD
-    echo "[x] Invalid role selected."
-=======
     echo -e "${RED}[x] Invalid role selected.${NC}"
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
     exit 1
 fi
 
@@ -394,11 +324,6 @@ ip addr add $VXLAN_IP dev $VXLAN_IF
 ip link set $VXLAN_IF up
 
 echo "[+] Adding iptables rules"
-<<<<<<< HEAD
-iptables -I INPUT 1 -p udp --dport $DSTPORT -j ACCEPT
-iptables -I INPUT 1 -s $REMOTE_IP -j ACCEPT
-iptables -I INPUT 1 -s ${VXLAN_IP%/*} -j ACCEPT
-=======
 iptables -I INPUT -p udp --dport $DSTPORT -j ACCEPT
 iptables -I INPUT -s $REMOTE_IP -j ACCEPT
 iptables -I INPUT -s ${VXLAN_IP%/*} -j ACCEPT
@@ -408,7 +333,6 @@ CONFIG_FILE="/etc/vxlan-tunnel-${VNI}.conf"
 echo "DSTPORT=$DSTPORT" > $CONFIG_FILE
 echo "REMOTE_IP=$REMOTE_IP" >> $CONFIG_FILE
 echo "VXLAN_IP=$VXLAN_IP" >> $CONFIG_FILE
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
 
 # ---------------- CREATE SYSTEMD SERVICE ----------------
 echo "[+] Creating systemd service for VXLAN..."
@@ -443,8 +367,4 @@ systemctl enable vxlan-tunnel-${VNI}.service
 systemctl start vxlan-tunnel-${VNI}.service
 
 echo -e "\n${GREEN}[✓] VXLAN tunnel service enabled to run on boot.${NC}"
-<<<<<<< HEAD
 echo "[✓] VXLAN tunnel setup completed successfully."
-=======
-echo "[✓] VXLAN tunnel setup completed successfully."
->>>>>>> 09e3f89 (Update install.sh with VXLAN setup v1.0.2)
