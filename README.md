@@ -1,25 +1,25 @@
-<div align="center"><img src="https://raw.githubusercontent.com/MrAminiDev/LenaTunnel/main/lena.PNG" width="500"></div>
+<div align="center"><img src="https://raw.githubusercontent.com/Arashtelr/LenaTunnel-Multi/main/lena.PNG" width="500"></div>
 <div align="center"><br>
 
-  برای توضیحات <a href="https://github.com/MrAminiDev/LenaTunnel/blob/main/README-fa.md"> فارسی اینجا بزنید </a>
+  برای توضیحات <a href="https://github.com/Arashtelr/LenaTunnel-Multi/blob/main/README-fa.md"> فارسی اینجا بزنید </a>
 
 </div>
 <br><br>
 
 # What is Lena Tunnel?
 
-Lena is a fast, lightweight and intelligent tunnel that provides a stable and secure network communication experience by relying on powerful VxLAN technology and automatic traffic management through Haproki. This system is designed to automatically manage communication tunnels and direct traffic with minimal latency and maximum efficiency without the need for complex settings. Lena is an ideal choice for those looking for a professional, low-power and reliable solution in network infrastructure.
+Lena is a fast, lightweight, and intelligent tunnel that provides a stable and secure network communication experience by relying on powerful VxLAN technology. This system is designed to automatically manage communication tunnels and direct traffic with minimal latency and maximum efficiency without the need for complex configurations. Lena is an ideal choice for those seeking a professional, low-resource, and reliable solution for network infrastructure.
 
 # Key features of Lena:
 
 🚀 VxLAN-based tunneling: Using network virtualization technology to create a fast, stable and secure tunnel between servers. <br>
 🌐 Local IPv4 Support: In situations where IPv6 is restricted or blocked, Lena maintains your connection without interruption using local IPv4.<br>
-⚙️ Easy installation and setup with HAProxy: Tunnels are automatically and intelligently created and managed with the help of the powerful HAProxy tool.<br>
+🔄 Multi-Tunnel Support: Enables the creation of multiple tunnels with unique VNIs (1-255) for connecting one Iran server to multiple foreign servers or multiple Iran servers to one foreign server.<br>
 💡 Very low resource consumption: Lena is designed for optimal performance and consumes minimal hardware resources while providing high speed and stability.<br>
 
 # Install script
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/MrAminiDev/LenaTunnel/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/Arashtelr/LenaTunnel-Multi/main/install.sh)
 ```
 
 ## Support the project with cryptocurrency
