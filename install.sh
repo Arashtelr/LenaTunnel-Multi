@@ -351,25 +351,35 @@ echo "[+] Creating systemd service for VXLAN..."
 
 cat <<EOF > /usr/local/bin/vxlan_bridge_${VNI}.sh
 #!/bin/bash
-# Check if interface already exists
-if ! ip link show $VXLAN_IF &>/dev/null; then
-    echo "[*] Creating VXLAN interface $VXLAN_IF"
-    ip link add $VXLAN_IF type vxlan id $VNI local $(hostname -I | awk '{print $1}') remote $REMOTE_IP dev $INTERFACE dstport $DSTPORT nolearning || {
-        echo "[x] Failed to create VXLAN interface"
-        exit 1
-    }
-    ip addr add $VXLAN_IP dev $VXLAN_IF || {
-        echo "[x] Failed to assign IP address"
-        exit 1
-    }
-    ip link set $VXLAN_IF up || {
-        echo "[x] Failed to bring up interface"
-        exit 1
-    }
-    echo "[✓] VXLAN interface $VXLAN_IF created successfully"
-else
-    echo "[!] Interface $VXLAN_IF already exists - skipping creation"
+# Cleanup any existing interface
+if ip link show $VXLAN_IF &>/dev/null; then
+    echo "[*] Removing existing VXLAN interface $VXLAN_IF"
+    ip link del $VXLAN_IF 2>/dev/null
+    sleep 1
 fi
+
+echo "[*] Creating VXLAN interface $VXLAN_IF"
+ip link add $VXLAN_IF type vxlan id $VNI local $(hostname -I | awk '{print $1}') remote $REMOTE_IP dev $INTERFACE dstport $DSTPORT nolearning || {
+    echo "[x] Failed to create VXLAN interface"
+    exit 1
+}
+
+echo "[*] Assigning IP $VXLAN_IP to $VXLAN_IF"
+ip addr add $VXLAN_IP dev $VXLAN_IF || {
+    echo "[x] Failed to assign IP address"
+    exit 1
+}
+
+echo "[*] Bringing up $VXLAN_IF"
+ip link set $VXLAN_IF up || {
+    echo "[x] Failed to bring up interface"
+    exit 1
+}
+
+echo "[✓] VXLAN interface $VXLAN_IF created successfully"
+
+# Keep the script running to maintain the service
+sleep infinity
 EOF
 
 chmod +x /usr/local/bin/vxlan_bridge_${VNI}.sh
@@ -383,11 +393,8 @@ Requires=network.target
 [Service]
 Type=simple
 ExecStart=/bin/bash /usr/local/bin/vxlan_bridge_${VNI}.sh
-Restart=on-failure
+Restart=always
 RestartSec=5
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=vxlan-$VNI
 
 [Install]
 WantedBy=multi-user.target
