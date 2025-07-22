@@ -30,11 +30,11 @@ Lena_menu() {
     echo "|    _                                                                       |"
     echo "|   | |                                                                      |"
     echo "|   | |     ___ _ __   __ _                                                  |"
-    echo "|   | |    / _ \ '_ \ / _\ |                                                 |"
+    echo "|   | |    / _ \ '_ \ / _\` |                                                 |"
     echo "|   | |___|  __/ | | | (_| |                                                 |"
-    echo "|   |_____/\___|_| |_|\__,_|       V1.0.3 Beta                               |"
+    echo "|   |_____/\___|_| |_|\__,_|       V1.0.4 Beta                               |"
     echo "+-----------------------------------------------------------------------------+"
-    echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 1.0.3 Beta ${NC} |"
+    echo -e "| Telegram Channel : ${MAGENTA}@AminiDev ${NC}| Version : ${GREEN} 1.0.4 Beta ${NC}     |"
     echo "+-----------------------------------------------------------------------------+"      
     echo -e "|${GREEN}Server Country    |${NC} $SERVER_COUNTRY"
     echo -e "|${GREEN}Server IP         |${NC} $SERVER_IP"
@@ -54,6 +54,8 @@ Lena_menu() {
 uninstall_all_vxlan() {
     echo "[!] Deleting all VXLAN interfaces and cleaning up..."
     for i in $(ip -d link show | grep -o 'vxlan[0-9]\+'); do
+        systemctl stop vxlan-tunnel-${i#vxlan}.service 2>/dev/null
+        systemctl disable vxlan-tunnel-${i#vxlan}.service 2>/dev/null
         ip link del $i 2>/dev/null
     done
     rm -f /usr/local/bin/vxlan_bridge_*.sh
@@ -93,7 +95,7 @@ uninstall_single_vxlan() {
     iptables -D INPUT -s $REMOTE_IP -j ACCEPT 2>/dev/null
     iptables -D INPUT -s ${VXLAN_IP%/*} -j ACCEPT 2>/dev/null
 
-    echo "[*] Stopping tunnel vxlan${VNI}..."
+    echo "[*] Stopping and removing tunnel vxlan${VNI}..."
     systemctl stop vxlan-tunnel-${VNI}.service 2>/dev/null
     systemctl disable vxlan-tunnel-${VNI}.service 2>/dev/null
     rm -f /etc/systemd/system/vxlan-tunnel-${VNI}.service
@@ -148,6 +150,7 @@ list_tunnels() {
         echo -e "| ${RED}No active tunnels found${NC}                              |"
     fi
     echo "+-----+--------+-----------------+-----------------+----------+"
+    return $active_tunnels
 }
 
 view_logs() {
@@ -160,8 +163,14 @@ view_logs() {
         return
     fi
     
-    echo -e "\n${YELLOW}Last 10 log entries for tunnel $VNI:${NC}"
-    journalctl -u vxlan-tunnel-${VNI}.service -n 10 --no-pager
+    SERVICE="vxlan-tunnel-${VNI}.service"
+    if ! systemctl is-enabled $SERVICE &>/dev/null; then
+        echo -e "${RED}[x] Tunnel VNI $VNI not found${NC}"
+        return
+    fi
+    
+    echo -e "\n${YELLOW}Last 20 log entries for tunnel $VNI:${NC}"
+    journalctl -u $SERVICE -n 20 --no-pager
 }
 
 # ---------------- MAIN ----------------
@@ -169,7 +178,6 @@ while true; do
     Lena_menu
     read -p "Enter your choice [0-4]: " main_action
     
-    # Handle 0 to exit at any point
     if [[ "$main_action" == "0" ]]; then
         echo "Exiting..."
         exit 0
@@ -214,6 +222,7 @@ while true; do
             ;;
         4)
             list_tunnels
+            active_tunnels=$?
             if [ $active_tunnels -eq 1 ]; then
                 view_logs
             fi
@@ -303,7 +312,7 @@ elif [[ "$role_choice" == "2" ]]; then
     echo "Kharej Server setup complete."
     echo -e "####################################"
     echo -e "# Your IPv4 :                      #"
-    echo -e "#  30.0.${VNI}.2                  #"
+    echo -e "#  30.0.${VNI}.2                   #"
     echo -e "####################################"
 
 else
@@ -313,6 +322,7 @@ fi
 
 # Detect default interface
 INTERFACE=$(ip route get 1.1.1.1 | awk '{print $5}' | head -n1)
+[ -z "$INTERFACE" ] && INTERFACE=$(ip route | awk '/default/ {print $5}')
 echo "Detected main interface: $INTERFACE"
 
 # ------------ Setup VXLAN --------------
@@ -333,15 +343,33 @@ CONFIG_FILE="/etc/vxlan-tunnel-${VNI}.conf"
 echo "DSTPORT=$DSTPORT" > $CONFIG_FILE
 echo "REMOTE_IP=$REMOTE_IP" >> $CONFIG_FILE
 echo "VXLAN_IP=$VXLAN_IP" >> $CONFIG_FILE
+echo "INTERFACE=$INTERFACE" >> $CONFIG_FILE
+echo "VNI=$VNI" >> $CONFIG_FILE
 
 # ---------------- CREATE SYSTEMD SERVICE ----------------
 echo "[+] Creating systemd service for VXLAN..."
 
 cat <<EOF > /usr/local/bin/vxlan_bridge_${VNI}.sh
 #!/bin/bash
-ip link add $VXLAN_IF type vxlan id $VNI local $(hostname -I | awk '{print $1}') remote $REMOTE_IP dev $INTERFACE dstport $DSTPORT nolearning
-ip addr add $VXLAN_IP dev $VXLAN_IF
-ip link set $VXLAN_IF up
+# Check if interface already exists
+if ! ip link show $VXLAN_IF &>/dev/null; then
+    echo "[*] Creating VXLAN interface $VXLAN_IF"
+    ip link add $VXLAN_IF type vxlan id $VNI local $(hostname -I | awk '{print $1}') remote $REMOTE_IP dev $INTERFACE dstport $DSTPORT nolearning || {
+        echo "[x] Failed to create VXLAN interface"
+        exit 1
+    }
+    ip addr add $VXLAN_IP dev $VXLAN_IF || {
+        echo "[x] Failed to assign IP address"
+        exit 1
+    }
+    ip link set $VXLAN_IF up || {
+        echo "[x] Failed to bring up interface"
+        exit 1
+    }
+    echo "[✓] VXLAN interface $VXLAN_IF created successfully"
+else
+    echo "[!] Interface $VXLAN_IF already exists - skipping creation"
+fi
 EOF
 
 chmod +x /usr/local/bin/vxlan_bridge_${VNI}.sh
@@ -350,21 +378,33 @@ cat <<EOF > /etc/systemd/system/vxlan-tunnel-${VNI}.service
 [Unit]
 Description=VXLAN Tunnel Interface (VNI $VNI)
 After=network.target
+Requires=network.target
 
 [Service]
-ExecStart=/usr/local/bin/vxlan_bridge_${VNI}.sh
-Type=oneshot
-RemainAfterExit=yes
+Type=simple
+ExecStart=/bin/bash /usr/local/bin/vxlan_bridge_${VNI}.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=vxlan-$VNI
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
 chmod 644 /etc/systemd/system/vxlan-tunnel-${VNI}.service
-systemctl daemon-reexec
 systemctl daemon-reload
-systemctl enable vxlan-tunnel-${VNI}.service
-systemctl start vxlan-tunnel-${VNI}.service
+systemctl enable --now vxlan-tunnel-${VNI}.service
 
-echo -e "\n${GREEN}[✓] VXLAN tunnel service enabled to run on boot.${NC}"
-echo "[✓] VXLAN tunnel setup completed successfully."
+# Verify service status
+if systemctl is-active --quiet vxlan-tunnel-${VNI}.service; then
+    echo -e "\n${GREEN}[✓] VXLAN tunnel service is running${NC}"
+    echo "[*] View logs: journalctl -u vxlan-tunnel-${VNI}.service -n 10"
+else
+    echo -e "\n${RED}[x] Service failed to start${NC}"
+    journalctl -u vxlan-tunnel-${VNI}.service -n 10 --no-pager
+    exit 1
+fi
+
+echo -e "${GREEN}[✓] VXLAN tunnel setup completed successfully.${NC}"
