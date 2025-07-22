@@ -169,8 +169,8 @@ view_logs() {
         return
     fi
     
-    echo -e "\n${YELLOW}Last 10 log entries for tunnel $VNI:${NC}"
-    journalctl -u $SERVICE -n 10 --no-pager
+    echo -e "\n${YELLOW}Last 20 log entries for tunnel $VNI:${NC}"
+    journalctl -u $SERVICE -n 20 --no-pager
 }
 
 # ---------------- MAIN ----------------
@@ -402,24 +402,12 @@ EOF
 
 chmod 644 /etc/systemd/system/vxlan-tunnel-${VNI}.service
 systemctl daemon-reload
-
-# Clear existing logs for this service
-journalctl --unit=vxlan-tunnel-${VNI}.service --rotate
-journalctl --unit=vxlan-tunnel-${VNI}.service --vacuum-time=1s >/dev/null 2>&1
-
-# Enable and start the service
 systemctl enable --now vxlan-tunnel-${VNI}.service
 
 # Verify service status
 if systemctl is-active --quiet vxlan-tunnel-${VNI}.service; then
     echo -e "\n${GREEN}[✓] VXLAN tunnel service is running${NC}"
-    
-    # Wait for logs to be generated
-    sleep 2
-    
-    # Show last 10 logs
-    echo -e "\n${YELLOW}Last 10 log entries for tunnel $VNI:${NC}"
-    journalctl -u vxlan-tunnel-${VNI}.service -n 10 --no-pager
+    echo "[*] View logs: journalctl -u vxlan-tunnel-${VNI}.service -n 10"
 else
     echo -e "\n${RED}[x] Service failed to start${NC}"
     journalctl -u vxlan-tunnel-${VNI}.service -n 10 --no-pager
